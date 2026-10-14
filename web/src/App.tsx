@@ -68,7 +68,7 @@ function ProductSectionView({ section, wished, onWish, onOpen, onAdd }: {
   return (
     <>
       {section.bandImage && <button className="band-banner" type="button" data-ade-kind="object" data-ade-name="ade_8b7b86d0d574" data-ade-role="banner" data-ade-id-key="banner_id" data-ade-banner-id={`band-${section.id}`} onClick={() => document.getElementById(section.id)?.scrollIntoView({ behavior: 'smooth' })}><img src={section.bandImage} alt={`${section.title} 프로모션 배너`} /></button>}
-      <section className="product-section" id={section.id} data-section-id={section.id} data-ade-kind="object" data-ade-name="ade_e6d81ad71e01" data-ade-id-key="section_id" data-ade-section-id={section.id}>
+      <section className="product-section" id={section.id} data-section-id={section.id}>
         <button className="section-heading" type="button" data-ade-kind="control" data-ade-name="ade_79c181d17abe">
           <span>{section.title}</span><Icon data-ade-pl="cabc9d" name="chevron" size={30} />
         </button>

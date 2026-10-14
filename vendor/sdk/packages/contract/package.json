@@ -1,0 +1,24 @@
+{
+  "name": "@adestack/contract",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "코드젠 선언 읽기 계약 · 민감 요소 판정 — @adestack/core/contract 로 교체될 임시 구현",
+  "license": "UNLICENSED",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "publishConfig": {
+    "@adestack:registry": "https://gitlab.hectoai.co.kr/api/v4/projects/${CI_PROJECT_ID}/packages/npm/"
+  }
+}

@@ -1,0 +1,102 @@
+# ADE 수집 SDK — 개발명세 02-상세/01_SDK-구현-계약 §8 · §13.4
+#
+#   §13.4 가 정한 대로 관문 통과를 publish 의 전제 조건으로 건다.
+#   관문이 FAIL 인데 배포되면 벤더 제품명이 섞인 SDK 가 서비스팀 레포로 들어간다.
+
+# MR 파이프라인과 브랜치 푸시 파이프라인을 모두 돌리되, MR이 열린 브랜치는 MR 파이프라인만 돈다(중복 방지).
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH
+
+default:
+  image: node:24-alpine
+  # 사내 인스턴스 러너(#1)가 **태그 붙은 작업만** 받는다. 이 줄이 없으면 파이프라인이
+  # 실행되지 않고 stuck 으로 대기한다 — 실패가 아니라 아무도 집어가지 않는 상태다.
+  tags: [mlops]
+  before_script:
+    # pnpm 은 Node 에 딸려 오는 Corepack 으로 켠다. 버전은 package.json 의
+    # packageManager 가 정한다 — 여기에 버전을 또 적으면 두 곳이 갈라진다.
+    - corepack enable
+    - pnpm install --frozen-lockfile
+
+stages: [verify, publish]
+
+# ── §8 관문 ──────────────────────────────────────────────────────────────────
+#   1 버전 고정 검사 · 2 속성 동기화 검사 · 3 실브라우저 관문 · 4 관측 이름 스냅샷
+#   현재는 1 · 3 과 단위 시험이 돈다. **2·4 는 아직 없다** —
+#   2(속성 동기화)는 어휘 목록을 받는 통로가 생기면, 4 는 이름 스냅샷 대조(DA-144)와 함께
+#   붙인다. 2 가 없는 동안 capture_extra_attrs 가 낡아도 아무도 잡지 못한다.
+#
+#   시험 결과는 도구가 낸다. junit.xml 을 GitLab 이 읽어 MR 과 파이프라인 화면에 띄운다.
+#   손으로 정리한 결과 문서는 두지 않는다.
+verify:
+  stage: verify
+  script:
+    - pnpm run typecheck
+    - pnpm test         # 빌드를 선행한다 — packages/contract/test/contract.test.mjs 가 dist 를 읽는다
+    - node scripts/check-version-pin.mjs
+  artifacts:
+    when: always        # 실패해도 남긴다 — 무엇이 깨졌는지 거기 있다
+    expire_in: 2 weeks
+    reports:
+      junit: junit.xml  # GitLab 이 읽어 MR 시험 화면에 띄운다
+    paths:
+      - junit.xml       # reports 만 있으면 Build > Artifacts 파일 목록에 안 보인다 — 거기서 열어 보는 게 공유 경로다
+
+# 3 실브라우저 관문 — tests/browser/. 크롬 · 파이어폭스 · WebKit 에서 SDK 빌드 결과물을 돌린다.
+#   node:24-alpine 에는 브라우저를 깔 수 없어 Playwright 공식 이미지를 쓴다.
+#   태그는 Playwright 버전과 같아야 한다 — 다르면 「브라우저가 없다」로 실패한다.
+browser:
+  stage: verify
+  image: mcr.microsoft.com/playwright:v1.63.0-noble
+  script:
+    - pnpm run build                  # 브라우저 시험은 dist 를 패키지 이름으로 읽는다
+    - pnpm run test:e2e
+  artifacts:
+    when: always
+    expire_in: 2 weeks
+    reports:
+      junit: tests/browser/test-results/junit.xml
+    paths:
+      - tests/browser/playwright-report/   # 사람이 연다. 실패한 시험의 추적 기록까지 있다
+      - tests/browser/test-results/
+
+# ── npm 배포 ─────────────────────────────────────────────────────────────────
+#   태그를 붙였을 때만 나간다. CI_JOB_TOKEN 은 GitLab 이 자동으로 넣어 준다.
+publish:
+  stage: publish
+  needs: [verify]
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - pnpm run build
+    - |
+      cat > .npmrc <<NPMRC
+      @adestack:registry=https://gitlab.hectoai.co.kr/api/v4/projects/${CI_PROJECT_ID}/packages/npm/
+      //gitlab.hectoai.co.kr/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}
+      NPMRC
+    # 루트가 곧 @adestack/sdk 다(DA-193). sdk 가 의존하는 name · contract 와 확장 extensions 를
+    # **먼저** 올리고 루트를 마지막에 올린다. 순서가 뒤바뀌면 서비스팀의 `npm i @adestack/sdk` 가
+    # 의존성을 못 찾는다. -r 은 packages/* 를 의존 순서대로 돈다(루트는 포함하지 않는다).
+    # 시험(tests/)은 패키지가 아니라 publish 대상이 아니다. workspace:0.1.0 은 publish 때 0.1.0 으로 바뀐다.
+    # --no-git-checks: 태그 빌드는 분리된 HEAD 라 pnpm 의 브랜치 검사가 걸린다.
+    - pnpm -r publish --no-git-checks
+    - pnpm publish --no-git-checks
+
+# ── 레포 규칙 검사 (code-template) ───────────────────────────────────────────
+#   검사 내용은 scripts/check-repo.py 가 소유한다. 템플릿 기본값은 stage: test 이지만
+#   이 레포의 stages 에 test 가 없어 verify 에 넣었다. tags 는 default 에서 물려받는다.
+check:
+  stage: verify
+  image: python:3.14-alpine
+  variables:
+    GIT_DEPTH: "0"   # 얕은 클론이면 기준 브랜치와의 공통 조상이 잘려 origin/<기준>..HEAD 범위가 틀어진다
+  before_script:
+    - apk add --no-cache git
+    - git fetch origin '+refs/heads/*:refs/remotes/origin/*'
+  script:
+    - python3 -m unittest discover -s scripts -p 'test_check_repo.py'
+    - python3 scripts/check-repo.py

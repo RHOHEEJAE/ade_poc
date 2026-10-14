@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ADE SDK 검증 페이지</title>
+<!--
+  랩 「👁 노출」 탭의 케이스를 그대로 옮긴 것이다. 사람이 보는 페이지가 아니라
+  기계가 스크롤하며 도는 페이지라, 요소 사이를 spacer 로 벌려 처음엔 전부 화면 밖에 둔다.
+
+  케이스와 기대값 (hecto_edp 6a24209 에서 확인한 값)
+    상품 카드 3개     3건  이름은 같고 업무ID 로 갈린다
+    큰 배너 300vh     1건  화면보다 커도 화면의 절반을 덮으면 인정
+    off 배너          0건  data-ade-impression="off"
+    control           0건  kind 가 object 가 아니다
+    빈 업무ID 2개     2건  한 열쇠로 뭉치지 않고 요소 단위로 센다
+
+  data-case 는 시험이 요소를 찾는 손잡이다. SDK 는 이 속성을 읽지 않는다.
+-->
+<style>
+  body { margin: 0; font: 14px system-ui, sans-serif; }
+  .spacer { height: 120vh; background: #f3f4f6; display: grid; place-items: center; color: #9ca3af; }
+  .card { height: 30vh; margin: 8px; background: #dbeafe; display: grid; place-items: center; }
+  .banner { height: 300vh; margin: 8px; background: #fde68a; display: grid; place-items: center; }
+  .off { height: 30vh; margin: 8px; background: #e5e7eb; display: grid; place-items: center; }
+  button { height: 20vh; width: 60%; margin: 8px; }
+</style>
+</head>
+<body>
+
+<div class="spacer">시작</div>
+
+<!-- ① 상품 카드 3개 — 같은 name, 다른 item_id -->
+<div class="card" data-case="product-1"
+     data-ade-kind="object" data-ade-role="product" data-ade-name="ade_0000000000a1"
+     data-ade-id-key="item_id" data-ade-item-id="1001">상품 1001</div>
+<div class="card" data-case="product-2"
+     data-ade-kind="object" data-ade-role="product" data-ade-name="ade_0000000000a1"
+     data-ade-id-key="item_id" data-ade-item-id="1002">상품 1002</div>
+<div class="card" data-case="product-3"
+     data-ade-kind="object" data-ade-role="product" data-ade-name="ade_0000000000a1"
+     data-ade-id-key="item_id" data-ade-item-id="1003">상품 1003</div>
+
+<div class="spacer">사이</div>
+
+<!-- ② 화면보다 큰 배너 -->
+<div class="banner" data-case="banner-big"
+     data-ade-kind="object" data-ade-role="banner" data-ade-name="ade_0000000000b1"
+     data-ade-id-key="banner_id" data-ade-banner-id="summer">큰 배너 (300vh)</div>
+
+<div class="spacer">사이</div>
+
+<!-- ③ 노출 끔 -->
+<div class="off" data-case="banner-off"
+     data-ade-kind="object" data-ade-role="banner" data-ade-name="ade_0000000000b2"
+     data-ade-id-key="banner_id" data-ade-banner-id="muted"
+     data-ade-impression="off">노출 끈 배너</div>
+
+<!-- ④ control — 노출 대상이 아니다 -->
+<button data-case="control-1" data-ade-kind="control" data-ade-name="ade_0000000000c1">버튼</button>
+
+<!-- ④-0 control 안의 글자 · 아이콘 — 사람은 버튼 안의 span 을 누른다. 그 클릭은 버튼(선언)의 클릭이어야 한다 -->
+<button data-case="control-nested" data-ade-kind="control" data-ade-name="ade_0000000000c5"><span data-case="control-nested-text">안쪽 <b>글자</b></span></button>
+
+<!-- ④-1 마스크 서브트리 — 문구에 사람 이름이 박힌 자리. 이벤트는 남고 $el_text 만 대상 · 조상에서 빠져야 한다(DA-218) -->
+<div data-case="mask-wrap" data-ade-collect="mask">
+  <span>홍길동님 주문</span>
+  <button data-case="mask-btn" data-ade-kind="control" data-ade-name="ade_0000000000c2">홍길동님 결제</button>
+</div>
+
+<div class="spacer">사이</div>
+
+<!-- ④-2 실행 중 값의 길이 경계 — 업무ID 는 서버 데이터라 빌드가 못 본다. 255 는 그대로, 256 은 identity 에서 빠지고 등급 · 판정도
+     「업무ID 없음」으로 나와야 한다(DA-216 · 리뷰). object + role 이어야 등급이 identity 로 갈린다. 노출은 꺼서 노출 시험의 6건을 흔들지 않는다 -->
+<button data-case="id-255" data-ade-kind="object" data-ade-role="product" data-ade-name="ade_0000000000c3" data-ade-id-key="item_id" data-ade-item-id="LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL" data-ade-impression="off">ID 255</button>
+<button data-case="id-256" data-ade-kind="object" data-ade-role="product" data-ade-name="ade_0000000000c4" data-ade-id-key="item_id" data-ade-item-id="MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM" data-ade-impression="off">ID 256</button>
+
+<!-- ⑤ 빈 업무ID 2개 — 뭉치지 않고 요소마다 센다 -->
+<div class="card" data-case="empty-1"
+     data-ade-kind="object" data-ade-role="product" data-ade-name="ade_0000000000e1"
+     data-ade-id-key="item_id" data-ade-item-id="">빈 ID 1</div>
+<div class="card" data-case="empty-2"
+     data-ade-kind="object" data-ade-role="product" data-ade-name="ade_0000000000e1"
+     data-ade-id-key="item_id" data-ade-item-id="">빈 ID 2</div>
+
+<div class="spacer">끝</div>
+
+<script type="module" src="./dist/app.js"></script>
+</body>
+</html>

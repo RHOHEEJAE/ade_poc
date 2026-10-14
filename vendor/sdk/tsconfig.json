@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "noUncheckedIndexedAccess": false,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "noEmit": true,
+    "types": [],
+    // typecheck 는 빌드 전에 돈다(CI verify). 워크스페이스 패키지 import 를 dist 가 아니라
+    // 원본으로 풀어야 dist 없이도 검사가 된다. 빌드는 이 표를 안 보고 node_modules 의 dist 를 읽는다.
+    "paths": {
+      "@adestack/contract": ["./packages/contract/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*.ts", "packages/*/src/**/*.ts"]
+}

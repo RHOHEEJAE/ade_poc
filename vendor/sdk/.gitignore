@@ -1,0 +1,19 @@
+node_modules/
+junit.xml
+# ade_poc: 화면(Vercel) 빌드가 SDK 빌드 결과를 읽으므로 dist 는 올린다
+*.tgz
+.npmrc
+
+# 레포 규칙 검사기(scripts/check-repo.py)가 만드는 것
+__pycache__/
+*.py[cod]
+
+# 에이전트 로컬 상태 (팀 공유 .claude/settings.json 은 커밋)
+.claude/settings.local.json
+.claude/worktrees/
+.superpowers/
+.worktrees/
+
+# tests/browser (Playwright) 가 만드는 것. 결과는 CI 산출물로만 남긴다.
+test-results/
+playwright-report/

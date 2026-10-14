@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@adestack/sdk": ["../vendor/sdk/dist/index.d.ts"],
+      "@adestack/extensions": ["../vendor/sdk/packages/extensions/dist/index.d.ts"],
+      "@adestack/contract": ["../vendor/sdk/packages/contract/dist/index.d.ts"],
+      "@adestack/name": ["../vendor/sdk/packages/name/src/index.js"]
+    }
+  },
+  "include": ["src"]
+}

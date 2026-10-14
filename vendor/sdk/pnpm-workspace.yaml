@@ -1,0 +1,14 @@
+# pnpm 워크스페이스 구성. npm 의 package.json "workspaces" 를 대신한다.
+#
+#   두 곳에 같은 목록을 두지 않는다 — package.json 의 "workspaces" 는 지웠다.
+#   pnpm 은 이 파일만 읽으므로, 남겨 두면 아무도 안 읽는 목록이 하나 생긴다.
+#
+#   시험(tests/)은 패키지가 아니다 — mixpanel-js 처럼 시험 도구는 루트 devDependencies 에 둔다(DA-194).
+packages:
+  - 'packages/*'   # 확장 · 공유 규칙. npm 으로 나간다
+
+# esbuild 는 설치할 때 자기 플랫폼 바이너리를 확인하는 스크립트를 돈다.
+# pnpm 은 허용 목록에 없는 설치 스크립트를 막으므로, 여기 적지 않으면 install 이 실패한다.
+# tests/browser 가 시험 페이지를 묶는 데 쓴다.
+allowBuilds:
+  esbuild: true

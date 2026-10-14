@@ -1,0 +1,27 @@
+{
+  "name": "@adestack/extensions",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Mixpanel SDK 에 없는 기능 — 노출 · 세션 · 시스템 확장. @adestack/sdk 의 extensions 로 붙인다",
+  "license": "UNLICENSED",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "@adestack/contract": "workspace:0.1.0"
+  },
+  "publishConfig": {
+    "@adestack:registry": "https://gitlab.hectoai.co.kr/api/v4/projects/${CI_PROJECT_ID}/packages/npm/"
+  }
+}

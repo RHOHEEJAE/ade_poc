@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "skipLibCheck": true,
+    // core.js 를 그대로 내보내기 위해 켠다. 시험이 빌드 없이 같은 파일을 읽는다.
+    "allowJs": true,
+    "declaration": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "types": []
+  },
+  "include": ["src/**/*.ts", "src/**/*.js"]
+}

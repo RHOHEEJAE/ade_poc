@@ -231,7 +231,7 @@ export default function App() {
         </section>
 
         {searchTerm ? (
-          <section className="search-results content-width" id="search-results" data-section-id="search-results" data-ade-kind="object" data-ade-name="ade_1e6d33b0d605" data-ade-id-key="section_id" data-ade-section-id="search-results">
+          <section className="search-results content-width" id="search-results" data-section-id="search-results">
             <div className="search-result-header"><div><h2>‘{searchTerm}’ 검색 결과</h2><p>{searchResults.length}개의 상품을 찾았습니다.</p></div><button type="button" data-ade-kind="control" data-ade-name="ade_f2fe2929c4ab" onClick={() => { setSearchTerm(''); setQuery(''); pushPath('/main') }}>검색 결과 닫기</button></div>
             {searchResults.length ? <div className="search-grid">{searchResults.map((product) => <ProductCard data-ade-pl="9b18bf" key={product.id} product={product} wished={wished.has(product.id)} onWish={toggleWish} onOpen={setSelectedProduct} onAdd={addToCart} />)}</div> : <div className="empty-state"><Icon data-ade-pl="5f65e9" name="search" size={36} /><strong>일치하는 상품이 없습니다.</strong><span>다른 검색어를 입력해 주세요.</span></div>}
           </section>
